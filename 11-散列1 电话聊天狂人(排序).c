@@ -11,6 +11,7 @@ int compare(const void *a,const void *b)
 int main(void)
 {
         int Num;
+        int NumOfKing=1;
         int Max=1,cnt=1;
         char **Call;
         char CallKing[12];
@@ -29,14 +30,19 @@ int main(void)
                 {
                         if(Max<cnt)
                         {
+                                NumOfKing=1;
                                 Max=cnt;
                                 strcpy(CallKing,tem);
                         }
                         strcpy(tem,Call[i]);
                         cnt=1;
                 }
+                if(Max==cnt)
+                                NumOfKing++;
         }
         printf("%s %d",CallKing,Max);
+        if(NumOfKing>1)
+                printf(" %d",NumOfKing);
         return 0;
 }
 char **GetInput(int Num)
