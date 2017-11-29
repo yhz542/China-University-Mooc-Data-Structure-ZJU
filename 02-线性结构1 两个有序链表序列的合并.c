@@ -5,13 +5,13 @@ typedef struct Node *PtrToNode;
 typedef int ElementType;
 struct Node
 {
-    ElementType Data; /* 存储结点数据 */
-    PtrToNode   Next; /* 指向下一个结点的指针 */
+    ElementType Data; // 存储结点数据 
+    PtrToNode   Next; // 指向下一个结点的指针 
 };
-typedef PtrToNode List; /* 定义单链表类型 */
-List Read(void); /* 细节在此不表 */
+typedef PtrToNode List;// 定义单链表类型 
+List Read(void); // 细节在此不表 
 
-void Print( List L ); /* 细节在此不表；空链表将输出NULL */
+void Print( List L ); // 细节在此不表；空链表将输出NULL 
 List Merge( List L1, List L2 );
 int main()
 {
@@ -19,9 +19,7 @@ int main()
     L1 = Read();
     L2 = Read();
     L = Merge(L1, L2);
-
-
-        Print(L);
+    Print(L);
     Print(L1);
     Print(L2);
     return 0;
