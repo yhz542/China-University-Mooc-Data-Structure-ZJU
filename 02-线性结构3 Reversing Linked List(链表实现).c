@@ -1,5 +1,6 @@
-#include<stdio.h>
+#include<stdio.h>//链表实现 哈希表排序
 #include<stdlib.h>
+#include<math.h>
 typedef struct Node *List;
 struct Node
 {
@@ -8,40 +9,109 @@ struct Node
         int NextAddress;
         List Next;
 };
-List GetInput(int);
-List Sort(List,int,int);
+int GetTableLength(int);
+int NextPrime(int);
+int Hash(int,int);
+void Insert(List *,List,int);
+int Find(List *,int,int);
+List GetInput(int,List *,int);
+List Sort(List,int,int *,List *,int);
 List Reverse(List,int);
 void Test(List L);
 int main(void)
 {
-        List Source,Head,Tem;
-        int BeginAddress,TotalNum,ReLength,ReTime;
+        List Source,Head,Tem,TemHead;
+        List *HashTable;
+        int BeginAddress,TotalNum,ReLength,ReTime,TableLength;
         scanf("%d %d %d",&BeginAddress,&TotalNum,&ReLength);
-        ReTime=TotalNum/ReLength;
-        Source=GetInput(TotalNum);
-        Source=Sort(Source,BeginAddress,TotalNum);
+        TableLength=GetTableLength(TotalNum);
+        HashTable=(List *)malloc(sizeof(List)*TableLength);
+        for(int i=0;i<TableLength;i++)
+                HashTable[i]=NULL;
+        Source=GetInput(TotalNum,HashTable,TableLength);
         Head=(List)malloc(sizeof(struct Node));
-        Head->Next=Source;
+        Head->Next=Sort(Source,BeginAddress,&TotalNum,HashTable,TableLength);
+        ReTime=TotalNum/ReLength;
         Tem=Head;
         for(int i=0;i<ReTime;i++)
         {
+                TemHead=Tem->Next;
                 Tem->Next=Reverse(Tem,ReLength);
                 Tem->NextAddress=Tem->Next->Address;
-                for(int j=0;j<ReLength;j++)
-                {
-                        Tem=Tem->Next;
-                }
+                Tem=TemHead;
         }
-        while(Tem->Next)
-        {
-
-                Tem=Tem->Next;
-        }
-        Tem->NextAddress=-1;
+        if(Tem->Next)
+                Tem->NextAddress=Tem->Next->Address;
+        else
+                Tem->NextAddress=-1;
         Test(Head);
+        free(HashTable);
+        free(Source);
         return 0;
 }
-List GetInput(int TotalNum)
+int GetTableLength(int N)
+{
+        int Prime;
+        N*=2;
+        N++;
+        while((N%4)!=3)
+                N+=2;
+        Prime=NextPrime(N);
+        if(Prime<3)
+                Prime=3;
+        return Prime;
+}
+int NextPrime(int N)
+{
+        int i,p=N;
+        while(1)
+        {
+                for(i=(int)sqrt(p);i>2;i--)
+                        if(!(p%i))
+                                break;
+                if(i==2)
+                                break;
+                else
+                                p+=4;
+        }
+        return p;
+}
+int Hash(int Key,int P)
+{
+        return Key%P;
+}
+void Insert(List *HashTable,List L,int TableLength)
+{
+        int Index;
+        Index=Find(HashTable,L->Address,TableLength);
+        if(HashTable[Index]==NULL)
+        {
+                HashTable[Index]=L;
+        }
+}
+int Find(List *HashTable,int Address,int TableLength)
+{
+        int NewPosition,CurPosition;
+        int CNum=0;
+        NewPosition=CurPosition=Hash(Address,TableLength);
+        while(HashTable[NewPosition]!=NULL&&HashTable[NewPosition]->Address!=Address)
+        {
+                if(++CNum%2)
+                {
+                        NewPosition=CurPosition+(CNum+1)*(CNum+1)/4;
+                        if(NewPosition>=TableLength)
+                                NewPosition=NewPosition%TableLength;
+                }
+                else
+                {
+                        NewPosition=CurPosition-CNum*CNum/4;
+                        while(NewPosition<0)
+                                NewPosition+=TableLength;
+                }
+        }
+        return NewPosition;
+}
+List GetInput(int TotalNum,List *HashTable,int TableLength)
 {
         List Source;
         Source=(List)malloc(sizeof(struct Node)*TotalNum);
@@ -49,31 +119,31 @@ List GetInput(int TotalNum)
         {
                 scanf("%d %d %d",&Source[i].Address,&Source[i].Data,&Source[i].NextAddress);
                 Source[i].Next=NULL;
+                Insert(HashTable,Source+i,TableLength);
         }
         return Source;
 }
-List Sort(List Source,int BeginAddress,int TotalNum)
+List Sort(List Source,int BeginAddress,int *TotalNum,List *HashTable,int TableLength)
 {
-        List Head=Source,Tem;
+        if(*TotalNum<1)
+                return NULL;
+        List Head,Tem;
+        int cnt=1;
+        int Position;
         int i;
-        for(i=0;i<TotalNum;i++)
-        {
-                if(Source[i].Address==BeginAddress)
-                {
-                        Head=&Source[i];
-                        break;
-                }
-        }
+        Position=Find(HashTable,BeginAddress,TableLength);
+        Head=HashTable[Position];
         Tem=Head;
-        for(i=1;i<TotalNum-1;i++)
-                for(int j=0;j<TotalNum;j++)
-                {
-                        if(Tem->NextAddress==Source[j].Address)
-                        {
-                                Tem->Next=Source+j;
-                                Tem=Tem->Next;
-                        }
-                }
+        for(i=1;i<*TotalNum;i++)
+        {
+                Position=Find(HashTable,Tem->NextAddress,TableLength);
+                cnt++;
+                Tem->Next=HashTable[Position];
+                Tem=Tem->Next;
+                if(-1==Tem->NextAddress)
+                        break;
+        }
+        *TotalNum=cnt;
         return Head;
 }
 void Test(List L)
@@ -101,5 +171,3 @@ List Reverse(List Source,int ReLength)
         Source->Next->Next=Old;
         return New;
 }
-
-//remain to achieve
