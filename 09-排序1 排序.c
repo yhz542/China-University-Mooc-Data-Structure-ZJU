@@ -336,14 +336,14 @@ int GetDigit(int X,int D)
         }
         return d;
 }
-void LSDRadixSort(int Data[],int Length)
+void LSDRadixSort(int Data[],int Length)//次位优先
 {
         int D,Di,i;
         Bucket B;
         PtrToNode tem,p,List=NULL;
         for(i=0;i<Radix;i++)
                 B[i].head=B[i].tail=NULL;
-        for(i=0;i<Length;i++)//将数组元素逆序插入链表
+        for(i=0;i<Length;i++)//将数组元素逆序插入链表 即原数组中的第一个元素被放到了链表中的最后一个位置上。
         {
                 tem=(PtrToNode)malloc(sizeof(struct Node));
                 tem->key=Data[i];
@@ -353,28 +353,28 @@ void LSDRadixSort(int Data[],int Length)
         for(D=1;D<=MaxDigit;D++)
         {
                 p=List;
-                while(p)//对第D位进行插入 D=1 85插在5中 D=2插在8中
+                while(p)//将列表中的元素按照链表中的顺序依次放入相应的桶中，由于链表遵循原始数组顺序，所以该算法是稳定的
                 {
-                        Di=GetDigit(p->key,D);
+                        Di=GetDigit(p->key,D);//获取当前位的数
                         tem=p;
-                        p=p->next;
-                        tem->next=NULL;
-                        if(!B[Di].head)
+                        p=p->next;//p取链表中的下一个数
+                        tem->next=NULL;//将当前这个数的next设为空
+                        if(!B[Di].head)//如果该位数的桶为空，则桶的头和尾都指向这个数。
                                 B[Di].head=B[Di].tail=tem;
-                        else
+                        else//如果该桶不空，则插入尾部。并将该数设置为尾
                         {
                                 B[Di].tail->next=tem;//链表尾部进行插入
-                                B[Di].tail=tem;
+                                B[Di].tail=tem;//将该数设置为这个桶的尾部
                         }
                 }
-                List=NULL;
-                for(Di=Radix-1;Di>=0;Di--)
-                {
-                        if(B[Di].head)//将桶中元素按顺序插回链表中 再次进行位数排序 9 89 789
+                List=NULL;//链表清空
+                for(Di=Radix-1;Di>=0;Di--)//将上面按位拍好序的桶重新拼成一个链表
+                {       //将桶中元素按顺序插回链表中 直接用链表首尾链接的方式迅速将桶中的元素还原成一个完整的链表
+                        if(B[Di].head)//如果该桶不为空
                         {
-                                B[Di].tail->next=List;
-                                List=B[Di].head;
-                                B[Di].head=B[Di].tail=NULL;
+                                B[Di].tail->next=List;//将当前链表中的元素链接到这个桶的尾部。
+                                List=B[Di].head;//将链表指向这个桶的头部。这样这个桶的元素就全部转移到链表中了
+                                B[Di].head=B[Di].tail=NULL;//将桶清空
                         }
                 }
         }
