@@ -387,7 +387,7 @@ void LSDRadixSort(int Data[],int Length)//次位优先
         }
 }
 
-void MSDRadixSort(int Data[],int Length)
+void MSDRadixSort(int Data[],int Length)//主位排序
 {
         MSD(Data,0,Length-1,MaxDigit);
 }
@@ -396,7 +396,7 @@ void MSD(int Data[],int L,int R,int D)
         int Di,i,j;
         Bucket B;
         PtrToNode tem,p,List=NULL;
-        if(D==0)//递归的基准情形
+        if(D==0)//递归的基准情形，当前位数为0，
                 return;
         for(i=0;i<Radix;i++)//将桶初始化
                 B[i].head=B[i].tail=NULL;
@@ -410,30 +410,31 @@ void MSD(int Data[],int L,int R,int D)
         p=List;//指向链表表头
         while(p)
         {
-                Di=GetDigit(p->key,D);
+                Di=GetDigit(p->key,D);//获取当前位的数值
                 tem=p;
-                p=p->next;
-                tem->next=NULL;
-                if(!B[Di].head)
-                        B[Di].tail=tem;
-                tem->next=B[Di].head;
-                B[Di].head=tem;
+                p=p->next;//指向下一个结点
+                tem->next=NULL;//当前结点移出链表
+                //每次将当前元素放在桶的头结点
+                if(!B[Di].head)//如果桶为空
+                        B[Di].tail=tem;//桶的尾部指向当前结点
+                tem->next=B[Di].head;//当前结点的下一个结点设置为之前的头节点
+                B[Di].head=tem;//将当前结点设置为新的头节点
         }
-        i=j=L;
-        for(Di=0;Di<Radix;Di++)
+        i=j=L;//i,j指向左边起始位置的下标
+        for(Di=0;Di<Radix;Di++)//遍历每一个桶
         {
-                if(B[Di].head)
+                if(B[Di].head)//如果该桶中有元素
                 {
                         p=B[Di].head;
-                        while(p)
+                        while(p)//将桶中的元素放回数组中
                         {
                                 tem=p;
                                 p=p->next;
                                 Data[j++]=tem->key;
                                 free(tem);
                         }
-                        MSD(Data,i,j-1,D-1);
-                        i=j;
+                        MSD(Data,i,j-1,D-1);//递归调用排序放回桶中的元素
+                        i=j;//将指向数组左边起时的下标移到新的位置
                 }
         }
 }
